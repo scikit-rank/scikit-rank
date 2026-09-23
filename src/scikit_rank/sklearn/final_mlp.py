@@ -142,6 +142,7 @@ class FinalMLPBase(BaseEstimator):
         fs1_context: list[str] | tuple[str, ...] = (),
         fs2_context: list[str] | tuple[str, ...] = (),
         num_heads: int = 1,
+        use_pytorch_init: bool = False,
         num_encoder: str | torch.nn.Module = "identity",
         cat_encoder: str | torch.nn.Module = "per_feature",
         loss: str | Loss | None = None,
@@ -223,6 +224,7 @@ class FinalMLPBase(BaseEstimator):
         self.fs1_context = fs1_context
         self.fs2_context = fs2_context
         self.num_heads = num_heads
+        self.use_pytorch_init = use_pytorch_init
 
     def __sklearn_tags__(self) -> Tags:
         tags = super().__sklearn_tags__()
@@ -292,6 +294,7 @@ class FinalMLPBase(BaseEstimator):
             fs2_context=self.fs2_context,
             num_heads=self.num_heads,
             context_dim=self.embedding_dim or 10,
+            use_pytorch_init=self.use_pytorch_init,
             num_encoder=self.num_encoder,
             cat_encoder=self.cat_encoder,
             num_encoder_bins=ple_bins,

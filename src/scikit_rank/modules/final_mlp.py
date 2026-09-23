@@ -107,7 +107,14 @@ class FeatureSelection(torch.nn.Module):
 class InteractionAggregation(torch.nn.Module):
     """Multi-head bilinear fusion from the FinalMLP paper."""
 
-    def __init__(self, x_dim: int, y_dim: int, num_heads: int = 1) -> None:
+    def __init__(
+        self,
+        x_dim: int,
+        y_dim: int,
+        num_heads: int = 1,
+        *,
+        use_pytorch_init: bool = False,
+    ) -> None:
         super().__init__()
         if num_heads <= 0:
             raise ValueError(f"num_heads must be positive, got {num_heads}")
@@ -124,7 +131,11 @@ class InteractionAggregation(torch.nn.Module):
         self._w_xy = torch.nn.Parameter(
             torch.empty(num_heads, self._head_x_dim, self._head_y_dim),
         )
-        torch.nn.init.xavier_normal_(self._w_xy)
+        if use_pytorch_init:
+            bound = self._w_xy.numel() ** -0.5
+            torch.nn.init.uniform_(self._w_xy, -bound, bound)
+        else:
+            torch.nn.init.xavier_normal_(self._w_xy)
 
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         head_x = x.reshape(-1, self._num_heads, self._head_x_dim)

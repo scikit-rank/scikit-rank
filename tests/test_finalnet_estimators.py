@@ -59,11 +59,16 @@ def test_finalnet_classifier_averages_two_blocks() -> None:
 
 
 def test_finalnet_new_parameters_are_cloneable() -> None:
-    estimator = FinalNetClassifier(use_field_gate=True, use_2b_consistency_loss=True)
+    estimator = FinalNetClassifier(
+        use_field_gate=True,
+        use_pytorch_init=True,
+        use_2b_consistency_loss=True,
+    )
 
     cloned = clone(estimator)
 
     assert cloned.get_params()["use_field_gate"] is True
+    assert cloned.get_params()["use_pytorch_init"] is True
     assert cloned.get_params()["use_2b_consistency_loss"] is True
 
 
@@ -78,6 +83,7 @@ def test_finalnet_classifier_supports_field_gate_and_2b_consistency_loss() -> No
                 "embedding_dim": 4,
                 "num_encoder": "linear:embedding_dim=4",
                 "use_field_gate": True,
+                "use_pytorch_init": True,
                 "use_2b_consistency_loss": True,
             }
         ),

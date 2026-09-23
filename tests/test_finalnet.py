@@ -4,6 +4,7 @@ import pytest
 import torch
 import torch.nn.functional as F
 
+from scikit_rank import factories
 from scikit_rank.factories import build_finalnet
 from scikit_rank.modules.dcn import NumericEncoder
 from scikit_rank.modules.finalnet import (
@@ -139,7 +140,10 @@ def test_finalnet_field_gate_is_applied_only_to_first_branch() -> None:
     assert torch.equal(second_before, second_after)
 
 
-def test_finalnet_factory_restores_reference_gate_initialization() -> None:
+@pytest.mark.parametrize("use_pytorch_init", [False, True])
+def test_finalnet_factory_restores_reference_gate_initialization(
+    use_pytorch_init: bool,
+) -> None:
     plain = build_finalnet(
         n_num_features=0,
         cardinalities=[5, 7],
@@ -147,6 +151,7 @@ def test_finalnet_factory_restores_reference_gate_initialization() -> None:
         block_type="1B",
         block1_hidden_units=[4],
         use_field_gate=False,
+        use_pytorch_init=use_pytorch_init,
     )
     gated = build_finalnet(
         n_num_features=0,
@@ -155,6 +160,7 @@ def test_finalnet_factory_restores_reference_gate_initialization() -> None:
         block_type="1B",
         block1_hidden_units=[4],
         use_field_gate=True,
+        use_pytorch_init=use_pytorch_init,
     )
     gate = gated.field_gate()
 
@@ -166,6 +172,22 @@ def test_finalnet_factory_restores_reference_gate_initialization() -> None:
         sum(p.numel() for p in gated.parameters()) - sum(p.numel() for p in plain.parameters())
         == 22
     )
+
+
+@pytest.mark.parametrize("use_pytorch_init", [False, True])
+def test_build_finalnet_initialization_policy(monkeypatch, use_pytorch_init: bool) -> None:
+    initialized: list[torch.nn.Module] = []
+    monkeypatch.setattr(factories, "_init_weights", initialized.append)
+
+    model = factories.build_finalnet(
+        n_num_features=1,
+        cardinalities=[],
+        block_type="1B",
+        block1_hidden_units=[4],
+        use_pytorch_init=use_pytorch_init,
+    )
+
+    assert initialized == ([] if use_pytorch_init else [model])
 
 
 def test_finalnet_field_gate_rejects_unequal_field_widths() -> None:

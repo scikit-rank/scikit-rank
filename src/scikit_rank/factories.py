@@ -311,6 +311,7 @@ def build_dcnv2(
     num_experts: int = 4,
     moe_top_k: int = 2,
     use_inner_cross_layers: bool = False,
+    use_pytorch_init: bool = False,
     use_coral_head: bool = False,
     num_encoder_bins: list[torch.Tensor] | None = None,
     multihash_encoder: str | torch.nn.Module = "multihash",
@@ -440,7 +441,8 @@ def build_dcnv2(
     )
 
     model = DCNv2(layers=layers, reducer=reducer, body=body, head=head)
-    _init_weights(model)
+    if not use_pytorch_init:
+        _init_weights(model)
     return model
 
 
@@ -602,6 +604,7 @@ def build_finalnet(
     residual_type: str = "concat",
     interaction_activation: str | None = "relu",
     use_field_gate: bool = False,
+    use_pytorch_init: bool = False,
     num_encoder: str | torch.nn.Module = "identity",
     cat_encoder: str | torch.nn.Module = "per_feature",
     reducer: torch.nn.Module | None = None,
@@ -725,10 +728,10 @@ def build_finalnet(
             head2=torch.nn.Linear(second_block.output_dim(), n_outputs),
             field_gate=field_gate,
         )
-    _init_weights(model)
+    if not use_pytorch_init:
+        _init_weights(model)
     if field_gate is not None:
-        # The common initializer visits the gate's Linear after construction;
-        # restore the reference zero-weight/unit-bias state afterwards.
+        # Field gating requires the reference zero-weight/unit-bias initialization.
         field_gate.reset_reference_parameters()
     return model
 
@@ -863,6 +866,7 @@ def build_final_mlp(
     fs2_context: Sequence[str] = (),
     num_heads: int = 1,
     context_dim: int = 10,
+    use_pytorch_init: bool = False,
     num_encoder: str | torch.nn.Module = "identity",
     cat_encoder: str | torch.nn.Module = "per_feature",
     num_encoder_bins: list[torch.Tensor] | None = None,
@@ -940,11 +944,12 @@ def build_final_mlp(
             mlp1.output_dim(),
             mlp2.output_dim(),
             num_heads=num_heads,
+            use_pytorch_init=use_pytorch_init,
         ),
     )
-    _init_weights(model)
-    # _init_weights handles registered Linear/Embedding modules; w_xy is a raw
-    # parameter and retains the Xavier initialization from its constructor.
+    if not use_pytorch_init:
+        _init_weights(model)
+    # w_xy is a raw parameter and retains its mode-specific constructor init.
     return model
 
 
@@ -964,6 +969,7 @@ def build_tabm(  # noqa: C901, PLR0912 - keep TabM-specific construction local
     k: int = 32,
     arch_type: Literal["tabm", "tabm-mini"] = "tabm",
     start_scaling_init: Literal["random-signs", "normal"] = "normal",
+    use_pytorch_init: bool = False,
     num_encoder: str | torch.nn.Module = "identity",
     cat_encoder: str | torch.nn.Module = "per_feature",
     num_encoder_bins: list[torch.Tensor] | None = None,
@@ -1070,7 +1076,8 @@ def build_tabm(  # noqa: C901, PLR0912 - keep TabM-specific construction local
     registered_layers = torch.nn.ModuleDict(layers)
     # Preserve the package's specialized backbone/head initialization. Only the
     # feature encoders follow scikit-rank's existing initialization policy.
-    _init_weights(registered_layers)
+    if not use_pytorch_init:
+        _init_weights(registered_layers)
 
     backbone = tabm_lib.make_tabm_backbone(
         d_in=input_dim,

@@ -35,8 +35,10 @@ def _params(**overrides: object) -> dict[str, object]:
 @pytest.mark.parametrize("arch_type", ["tabm", "tabm-mini"])
 def test_tabm_classifier_is_cloneable_and_predicts_probabilities(arch_type: str) -> None:
     X, y = _data()
-    estimator = TabMClassifier(**_params(arch_type=arch_type))
-    assert clone(estimator).get_params()["k"] == 3
+    estimator = TabMClassifier(**_params(arch_type=arch_type, use_pytorch_init=True))
+    cloned = clone(estimator)
+    assert cloned.get_params()["k"] == 3
+    assert cloned.get_params()["use_pytorch_init"] is True
 
     estimator.fit(X, y)
     proba = estimator.predict_proba(X.head(5))

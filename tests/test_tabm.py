@@ -153,7 +153,8 @@ def test_tabm_style_adapter_initialization_is_preserved() -> None:
     assert torch.all(second.s == 1)
 
 
-def test_build_tabm_applies_common_initializer_only_to_encoder(monkeypatch) -> None:
+@pytest.mark.parametrize("use_pytorch_init", [False, True])
+def test_build_tabm_initialization_policy(monkeypatch, use_pytorch_init: bool) -> None:
     initialized: list[torch.nn.Module] = []
     monkeypatch.setattr(factories, "_init_weights", initialized.append)
 
@@ -165,9 +166,10 @@ def test_build_tabm_applies_common_initializer_only_to_encoder(monkeypatch) -> N
         n_blocks=1,
         d_block=4,
         k=2,
+        use_pytorch_init=use_pytorch_init,
     )
 
-    assert initialized == [model.layers()]
+    assert initialized == ([] if use_pytorch_init else [model.layers()])
 
 
 def test_tabm_ensemble_loss_averages_individual_losses() -> None:

@@ -1,6 +1,7 @@
 import pytest
 import torch
 
+from scikit_rank import factories
 from scikit_rank.factories import build_final_mlp
 from scikit_rank.modules.final_mlp import InteractionAggregation
 
@@ -22,6 +23,37 @@ def test_interaction_aggregation_matches_multihead_bilinear_formula() -> None:
         ).sum(dim=(1, 2))
     )
     torch.testing.assert_close(layer(x, y), expected)
+
+
+def test_interaction_aggregation_pytorch_init_matches_linear() -> None:
+    seed = 29
+    torch.manual_seed(seed)
+    torch.nn.Linear(6, 1)
+    torch.nn.Linear(4, 1)
+    expected = torch.nn.Linear(12, 1, bias=False).weight.detach()
+
+    torch.manual_seed(seed)
+    layer = InteractionAggregation(6, 4, num_heads=2, use_pytorch_init=True)
+
+    torch.testing.assert_close(layer._w_xy.reshape(1, -1), expected)
+
+
+@pytest.mark.parametrize("use_pytorch_init", [False, True])
+def test_build_final_mlp_initialization_policy(monkeypatch, use_pytorch_init: bool) -> None:
+    initialized: list[torch.nn.Module] = []
+    monkeypatch.setattr(factories, "_init_weights", initialized.append)
+
+    model = factories.build_final_mlp(
+        num_feature_names=["x"],
+        cat_feature_names=[],
+        cardinalities=[],
+        embedding_dims=[],
+        mlp1_hidden_units=[4],
+        mlp2_hidden_units=[4],
+        use_pytorch_init=use_pytorch_init,
+    )
+
+    assert initialized == ([] if use_pytorch_init else [model])
 
 
 def test_build_final_mlp_supports_all_builtin_feature_streams() -> None:

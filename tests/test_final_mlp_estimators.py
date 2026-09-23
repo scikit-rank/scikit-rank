@@ -35,9 +35,10 @@ def _params() -> dict:
 
 def test_final_mlp_classifier_is_cloneable_and_predicts_probabilities() -> None:
     X, y = _data()
-    estimator = FinalMLPClassifier(**_params())
+    estimator = FinalMLPClassifier(**_params(), use_pytorch_init=True)
     cloned = clone(estimator)
     assert cloned.get_params()["fs1_context"] == ("x1",)
+    assert cloned.get_params()["use_pytorch_init"] is True
 
     estimator.fit(X, y)
     proba = estimator.predict_proba(X.head(5))

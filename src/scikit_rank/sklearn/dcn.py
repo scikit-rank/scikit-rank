@@ -101,6 +101,9 @@ class DCNBase(BaseEstimator):
         Number of experts routed per row when ``use_moe=True``.
     use_inner_cross_layers : bool, default=False
         Enable the inner cross-layer variant.
+    use_pytorch_init : bool, default=False
+        Preserve constructor initialization instead of applying the common
+        scikit-rank initializer.
     loss : str or Loss or None, default=None
         Loss spec string (e.g. ``"bce"``, ``"bpr:sampling=all_pairs"``,
         ``"lambdarank"``, ``"cross_entropy"``, ``"coral_layer"``) or a :class:`Loss`
@@ -216,6 +219,7 @@ class DCNBase(BaseEstimator):
         num_experts: int = 4,
         moe_top_k: int = 2,
         use_inner_cross_layers: bool = False,
+        use_pytorch_init: bool = False,
         loss: str | Loss | None = None,
         lr: float = 1e-3,
         weight_decay: float = 0.0,
@@ -264,6 +268,7 @@ class DCNBase(BaseEstimator):
         self.num_experts = num_experts
         self.moe_top_k = moe_top_k
         self.use_inner_cross_layers = use_inner_cross_layers
+        self.use_pytorch_init = use_pytorch_init
         self.cat_encoder = cat_encoder
         self.loss = loss
         self.lr = lr
@@ -487,6 +492,7 @@ class DCNBase(BaseEstimator):
             num_experts=self.num_experts,
             moe_top_k=self.moe_top_k,
             use_inner_cross_layers=self.use_inner_cross_layers,
+            use_pytorch_init=self.use_pytorch_init,
             num_encoder_bins=ple_bins,
             multihash_encoder=self.multihash_encoder,
             multihash_n_inputs=mh_n_inputs or None,

@@ -16,7 +16,7 @@ import torch
 from sklearn.base import clone
 from sklearn.metrics import roc_auc_score
 
-from scikit_rank import DCNClassifier, build_dcnv2
+from scikit_rank import DCNClassifier, build_dcnv2, factories
 from scikit_rank.modules.dcn import DeepNetwork, LinearNumericEncoder
 from scikit_rank.modules.losses import make_loss
 from scikit_rank.preprocessing import TabularPreprocessor
@@ -85,6 +85,21 @@ def test_weight_init_applied_by_default() -> None:
     cross_biases = [p for n, p in model.named_parameters() if n.endswith("_bias")]
     assert cross_biases
     assert all(int(torch.count_nonzero(b)) == 0 for b in cross_biases)
+
+
+def test_pytorch_init_skips_common_initializer(monkeypatch) -> None:
+    initialized: list[torch.nn.Module] = []
+    monkeypatch.setattr(factories, "_init_weights", initialized.append)
+
+    factories.build_dcnv2(
+        n_num_features=1,
+        cardinalities=[],
+        hidden_units=[4],
+        cross_layers=1,
+        use_pytorch_init=True,
+    )
+
+    assert initialized == []
 
 
 # -- 3. numeric NaN fill ----------------------------------------------------
@@ -302,8 +317,10 @@ def test_dcnclassifier_batch_norm_fits_and_predicts() -> None:
 
 def test_batch_norm_defaults_off_and_clone_preserves() -> None:
     assert DCNClassifier().batch_norm is False
-    clf = DCNClassifier(batch_norm=True)
-    assert clone(clf).get_params()["batch_norm"] is True
+    clf = DCNClassifier(batch_norm=True, use_pytorch_init=True)
+    cloned = clone(clf)
+    assert cloned.get_params()["batch_norm"] is True
+    assert cloned.get_params()["use_pytorch_init"] is True
 
 
 def test_full_parity_stack_fits_on_toy() -> None:

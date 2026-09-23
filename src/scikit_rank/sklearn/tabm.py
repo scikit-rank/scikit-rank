@@ -61,6 +61,9 @@ class TabMBase(BaseEstimator):
     start_scaling_init : {"random-signs", "normal"} or None, default=None
         Initializer for feature-wise ensemble scaling. ``None`` selects a
         compatible default for the configured feature encoders.
+    use_pytorch_init : bool, default=False
+        Preserve constructor initialization instead of applying the common
+        scikit-rank initializer.
     embedding_dim : int or None, default=None
         Categorical embedding width. ``None`` uses a per-column fast.ai-style
         cardinality heuristic.
@@ -126,6 +129,7 @@ class TabMBase(BaseEstimator):
         k: int = 32,
         arch_type: Literal["tabm", "tabm-mini"] = "tabm",
         start_scaling_init: Literal["random-signs", "normal"] | None = None,
+        use_pytorch_init: bool = False,
         embedding_dim: int | None = None,
         num_encoder: str | torch.nn.Module = "identity",
         cat_encoder: str | torch.nn.Module = "per_feature",
@@ -202,6 +206,7 @@ class TabMBase(BaseEstimator):
         self.k = k
         self.arch_type = arch_type
         self.start_scaling_init = start_scaling_init
+        self.use_pytorch_init = use_pytorch_init
 
     def _tabm_aggregation(self, *, use_coral_head: bool) -> str:
         return "mean"
@@ -280,6 +285,7 @@ class TabMBase(BaseEstimator):
             k=self.k,
             arch_type=self.arch_type,
             start_scaling_init=start_scaling_init,
+            use_pytorch_init=self.use_pytorch_init,
             num_encoder=self.num_encoder,
             cat_encoder=self.cat_encoder,
             num_encoder_bins=ple_bins,

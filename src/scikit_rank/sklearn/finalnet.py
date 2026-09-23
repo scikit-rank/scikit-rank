@@ -89,6 +89,9 @@ class FinalNetBase(BaseEstimator):
     use_field_gate : bool, default=False
         Apply the FinalNet reference field gate to the first block. All logical
         feature fields must have the same encoded width.
+    use_pytorch_init : bool, default=False
+        Preserve constructor initialization instead of applying the common
+        scikit-rank initializer.
     use_2b_consistency_loss : bool, default=False
         Add the reference two-branch consistency/self-distillation objective.
         This is supported only by binary :class:`FinalNetClassifier` with
@@ -212,6 +215,7 @@ class FinalNetBase(BaseEstimator):
         residual_type: Literal["sum", "concat"] = "concat",
         interaction_activation: str | None = "relu",
         use_field_gate: bool = False,
+        use_pytorch_init: bool = False,
         use_2b_consistency_loss: bool = False,
         embedding_dim: int | None = None,
         num_encoder: str | torch.nn.Module = "identity",
@@ -259,6 +263,7 @@ class FinalNetBase(BaseEstimator):
         self.residual_type = residual_type
         self.interaction_activation = interaction_activation
         self.use_field_gate = use_field_gate
+        self.use_pytorch_init = use_pytorch_init
         self.use_2b_consistency_loss = use_2b_consistency_loss
         self.embedding_dim = embedding_dim
         self.num_encoder = num_encoder
@@ -490,6 +495,7 @@ class FinalNetBase(BaseEstimator):
             residual_type=self.residual_type,
             interaction_activation=self.interaction_activation,
             use_field_gate=self.use_field_gate,
+            use_pytorch_init=self.use_pytorch_init,
             num_encoder=self.num_encoder,
             cat_encoder=self.cat_encoder,
             num_encoder_bins=ple_bins,
