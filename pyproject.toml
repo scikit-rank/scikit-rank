@@ -1,6 +1,6 @@
 [project]
 name = "scikit-rank"
-version = "0.1.0"
+version = "1.0.0"
 description = "Scikit-learn-Compatible Neural Ranking Models for Tabular Recommender Systems"
 readme = "README.md"
 requires-python = ">=3.12,<3.14"
