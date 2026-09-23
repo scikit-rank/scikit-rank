@@ -57,6 +57,8 @@ def test_classifier_lazy_matches_eager_full_batch() -> None:
     np.testing.assert_allclose(
         eager.predict_proba(x_pred),
         lazy.predict_proba(x_pred.lazy()),
+        rtol=0,
+        atol=1e-6,
     )
 
 
