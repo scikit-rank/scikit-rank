@@ -11,6 +11,10 @@ sklearn pipelines and with `GridSearchCV`, `clone`, `get_params`, and `set_param
 from scikit_rank import DCNClassifier, FinalNetClassifier, TabMClassifier
 ```
 
+## Paper
+
+[Scikit-Rank: Scikit-learn-Compatible Neural Ranking Models for Tabular Recommender Systems](https://dl.acm.org/doi/full/10.1145/3773078.3841291) was accepted to RecSys 2026.
+
 ## Model zoo
 
 Every backbone has classifier, regressor, and learning-to-rank estimator variants.
@@ -221,6 +225,23 @@ configs, and hyperparameters behind the published results:
 
 See [`exps/README.md`](exps/README.md) for dataset sources and how to recreate the
 temporal-split datasets.
+
+## Citation
+
+```bibtex
+@inbook{scikitrank2026,
+    author = {Milogradskii, Aleksandr and Veselov, Ilya and Klyukin, Yaroslav and Kurdun, Maryia and Lashinin, Oleg and Liakhnovich, Kiryl},
+    title = {Scikit-Rank: Scikit-learn-Compatible Neural Ranking Models for Tabular Recommender Systems},
+    year = {2026},
+    isbn = {9798400722844},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    url = {https://doi.org/10.1145/3773078.3841291},
+    booktitle = {Proceedings of the 20th ACM Conference on Recommender Systems},
+    pages = {1826–1828},
+    numpages = {3}
+}
+```
 
 ## Development
 
